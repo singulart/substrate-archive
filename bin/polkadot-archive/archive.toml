@@ -1,7 +1,7 @@
 [chain]
 # Must be an absolute path to the folder where polkadot/kusama/and westend chain data is stored
 # Can also be specified via the `CHAIN_DATA_DB` environment variable
-data_path = "/.local/share/polkadot/chains/polkadot/db/full"
+data_path = "/Users/sonar/Library/Application Support/polkadot/chains/ksmcc3/db/full/"
 
 # How much should the read-only database keep in cache (MB)
 # Optional, default: 128
@@ -34,11 +34,11 @@ wasm_pages = 512
 # Can also be specified via the `DATABASE_URL` environment variable.
 # For production use, using `DATABASE_URL` is preferable.
 # More info on the wiki: https://github.com/paritytech/substrate-archive/wiki/1.)-Requirements.
-url = "postgres://postgres:123@localhost:5432/polkadot-archive"
+url = "postgres://localhost:5432/substrate_test"
 
 [log]
 # Optional log level of stdout, default: "DEBUG"
-std = "DEBUG"
+std = "INFO"
 
 # Optional file log.
 #[log.file]

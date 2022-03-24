@@ -423,7 +423,7 @@ impl Insert for Vec<ExtrinsicsModel> {
 		let mut batch = Batch::new(
 			"extrinsic",
 			r#"
-			INSERT INTO "extrinsics" (
+			INSERT INTO "extrinsics_old" (
 				hash, number, extrinsics
 			) VALUES
 			"#,
@@ -449,6 +449,39 @@ impl Insert for Vec<ExtrinsicsModel> {
 	}
 }
 
+#[async_trait::async_trait]
+impl Insert for Vec<EventModel> {
+	async fn insert(mut self, conn: &mut DbConn) -> DbReturn {
+		let mut batch = Batch::new(
+			"event",
+			r#"
+			INSERT INTO "events" (
+				id, block_height, module, event
+			) VALUES
+			"#,
+			r#"
+			ON CONFLICT DO NOTHING
+			"#,
+		);
+
+		for event in self.into_iter() {
+			batch.reserve(4)?;
+			if batch.current_num_arguments() > 0 {
+				batch.append(",");
+			}
+			batch.append("(");
+			batch.bind(event.id)?;
+			batch.append(",");
+			batch.bind(event.block_height)?;
+			batch.append(",");
+			batch.bind(event.module)?;
+			batch.append(",");
+			batch.bind(event.event)?;
+			batch.append(")");
+		}
+		Ok(batch.execute(conn).await?)
+	}
+}
 // Chrono depends on an error type in `time` that is a full version behind the one that SQLX uses
 // This function avoids depending on two time lib.
 // Old time is disabled in chrono by not providing the feature flag in Cargo.toml.

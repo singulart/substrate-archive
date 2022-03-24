@@ -46,6 +46,7 @@ mod logger;
 mod tasks;
 mod types;
 mod wasm_tracing;
+mod metadata;
 
 pub use self::actors::{ControlConfig, System};
 pub use self::archive::{Archive, ArchiveBuilder, ArchiveConfig, ChainConfig, TracingConfig};
@@ -70,6 +71,30 @@ pub fn substrate_archive_default_dir() -> std::path::PathBuf {
 	let mut path = base_dirs.data_local_dir().to_path_buf();
 	path.push("substrate_archive");
 	path
+}
+
+/// Call trait.
+pub trait Call: codec::Encode {
+	/// Pallet name.
+	const PALLET: &'static str;
+	/// Function name.
+	const FUNCTION: &'static str;
+
+	/// Returns true if the given pallet and function names match this call.
+	fn is_call(pallet: &str, function: &str) -> bool {
+		Self::PALLET == pallet && Self::FUNCTION == function
+	}
+}
+
+/// Wraps an already encoded byte vector, prevents being encoded as a raw byte vector as part of
+/// the transaction payload
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Encoded(pub Vec<u8>);
+
+impl codec::Encode for Encoded {
+	fn encode(&self) -> Vec<u8> {
+		self.0.to_owned()
+	}
 }
 
 #[cfg(test)]

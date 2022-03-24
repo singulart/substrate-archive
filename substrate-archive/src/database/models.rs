@@ -156,6 +156,20 @@ impl ExtrinsicsModel {
 	}
 }
 
+#[derive(Debug, Serialize, FromRow)]
+pub struct EventModel {
+	pub id: String,
+	pub module: String,
+	pub event: String,
+	pub block_height: i32,
+}
+
+impl EventModel {
+	pub fn new(id: String, module: String, event: String, block_height: i32) -> Result<Self> {
+		Ok(Self { id, module, event, block_height })
+	}
+}
+
 /// Config that is stored/restored in Postgres on every run.
 /// This is needed to persist RabbitMq task-queue name between runs.
 /// Archive version and timestamp included as extra metadata

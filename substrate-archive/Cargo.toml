@@ -6,6 +6,11 @@ edition = "2021"
 rust-version = "1.56.1"
 
 [dependencies]
+# subxt
+#subxt = {package = 'subxt', git = 'https://github.com/paritytech/subxt', links = 'parity-util-mem-ban-duplicates'}
+frame-metadata = "15.0.0"
+scale-info = { version = "2.0.0", features = ["bit-vec"] }
+
 # external
 async-trait = "0.1"
 arc-swap = "1.4.0"
