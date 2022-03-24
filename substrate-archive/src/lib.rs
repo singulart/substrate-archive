@@ -46,7 +46,7 @@ mod logger;
 mod tasks;
 mod types;
 mod wasm_tracing;
-mod metadata;
+pub mod metadata;
 
 pub use self::actors::{ControlConfig, System};
 pub use self::archive::{Archive, ArchiveBuilder, ArchiveConfig, ChainConfig, TracingConfig};

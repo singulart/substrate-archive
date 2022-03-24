@@ -59,6 +59,7 @@ use crate::{
 	error::Result,
 	tasks::Environment,
 };
+use crate::metadata::Metadata;
 
 /// Provides parameters that are passed in from the user.
 /// Provides context that every actor may use
@@ -237,6 +238,7 @@ where
 	handle: Option<JoinHandle<Result<()>>>,
 	client: Arc<C>,
 	_marker: PhantomData<(B, R, D)>,
+	pub metadata: Metadata
 }
 
 impl<Block, Runtime, Client, Db> System<Block, Runtime, Client, Db>
@@ -264,8 +266,9 @@ where
 		// for WASM runtime-instances
 		client: Arc<Client>,
 		config: SystemConfig<Block, Db>,
+		metadata: Metadata
 	) -> Result<Self> {
-		Ok(Self { handle: None, config, client, _marker: PhantomData })
+		Ok(Self { handle: None, config, client, _marker: PhantomData, metadata })
 	}
 
 	fn drive(&mut self) -> Result<()> {
@@ -436,8 +439,13 @@ where
 	Block::Hash: Unpin,
 	Block::Header: serde::de::DeserializeOwned,
 {
+	// fn get_metadata(self) -> Metadata {
+	// 	return self.metadata;
+	// }
+
 	fn drive(&mut self) -> Result<()> {
 		System::drive(self)?;
+		let _ = &self.metadata;
 		Ok(())
 	}
 

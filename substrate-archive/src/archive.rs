@@ -15,6 +15,7 @@
 // along with substrate-archive.  If not, see <http://www.gnu.org/licenses/>.
 
 use std::{env, fs, io, marker::PhantomData, path::PathBuf, sync::Arc};
+use frame_metadata::RuntimeMetadataPrefixed;
 
 use async_std::task;
 use serde::{de::DeserializeOwned, Deserialize};
@@ -22,6 +23,7 @@ use serde::{de::DeserializeOwned, Deserialize};
 use sc_chain_spec::ChainSpec;
 use sc_client_api::backend as api_backend;
 use sc_executor::RuntimeVersion;
+use scale_info::scale::Decode;
 use sp_api::{ApiExt, ConstructRuntimeApi};
 use sp_block_builder::BlockBuilder as BlockBuilderApi;
 use sp_blockchain::{Backend as BlockchainBackend, HeaderBackend};
@@ -42,6 +44,7 @@ use crate::{
 	logger::{self, FileLoggerConfig, LoggerConfig},
 	substrate_archive_default_dir,
 };
+use crate::metadata::{InvalidMetadataError, Metadata};
 
 /// Configure Chain.
 #[derive(Debug, Deserialize)]
@@ -119,6 +122,8 @@ pub trait Archive<Block: BlockT + Unpin, Db: ReadOnlyDb>
 where
 	Block::Hash: Unpin,
 {
+	// fn get_metadata(self) -> Metadata;
+
 	/// start driving the execution of the archive
 	fn drive(&mut self) -> Result<()>;
 
@@ -390,7 +395,7 @@ where
 			self.config.wasm_tracing.map(|t| t.targets),
 			persistent_config,
 		);
-		let sys = System::<_, Runtime, _, _>::new(client, config)?;
+		let sys = System::<_, Runtime, _, _>::new(client, config, load_metadata().unwrap())?;
 		Ok(sys)
 	}
 
@@ -424,6 +429,13 @@ where
 		}
 		Ok((rt, genesis_hash))
 	}
+}
+
+fn load_metadata() -> Result<Metadata, InvalidMetadataError> {
+	let metadata_path = std::env::var("METADATA_PATH").unwrap();
+	let binary_meta = fs::read(metadata_path).unwrap();
+	let decoded_meta: RuntimeMetadataPrefixed = Decode::decode(&mut binary_meta.as_slice()).unwrap();
+	Metadata::try_from(decoded_meta)
 }
 
 /// Create the secondary RocksDB directory if it doesn't exist yet.

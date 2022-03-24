@@ -31,6 +31,7 @@ fn main() -> anyhow::Result<()> {
 	let mut archive = ArchiveBuilder::<Block, RuntimeApi, SecondaryRocksDb>::with_config(config)
 		.chain_spec(Box::new(cli.chain_spec))
 		.build()?;
+	// archive.get_metadata(); //TODO
 	archive.drive()?;
 
 	let running = Arc::new(AtomicBool::new(true));

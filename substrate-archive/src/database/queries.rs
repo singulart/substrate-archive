@@ -51,12 +51,12 @@ struct BlockNum {
 }
 
 // Return type of queries that `SELECT block_num, ext`
-struct BlockExtrinsics {
-	block_num: i32,
-	hash: Vec<u8>,
-	ext: Vec<u8>,
-	spec: i32,
-}
+// struct BlockExtrinsics {
+// 	block_num: i32,
+// 	hash: Vec<u8>,
+// 	ext: Vec<u8>,
+// 	spec: i32,
+// }
 
 /// Return type of queries that `SELECT meta`
 struct Meta {
@@ -234,27 +234,28 @@ pub(crate) fn blocks_paginated<'a>(
 /// Get up to `max_block_load` extrinsics which are not present in the `extrinsics` table.
 /// Ordered from least to greatest number.
 pub(crate) async fn blocks_missing_extrinsics(
-	conn: &mut PgConnection,
-	max_block_load: u32,
+	_conn: &mut PgConnection,
+	_max_block_load: u32,
 ) -> Result<Vec<(u32, Vec<u8>, Vec<u8>, u32)>> {
-	let blocks = sqlx::query_as!(
-		BlockExtrinsics,
-		"
-		SELECT block_num, hash, ext, spec FROM blocks
-		WHERE NOT EXISTS
-			(SELECT number FROM extrinsics_old WHERE extrinsics.number = blocks.block_num)
-		ORDER BY block_num ASC
-		LIMIT $1
-		",
-		i64::from(max_block_load)
-	)
-	.fetch_all(conn)
-	.await?
-	.into_iter()
-	.map(|b| (b.block_num as u32, b.hash, b.ext, b.spec as u32))
-	.collect();
-
-	Ok(blocks)
+	// let blocks = sqlx::query_as!(
+	// 	BlockExtrinsics,
+	// 	r#"
+	// 	SELECT block_num, hash, ext, spec FROM blocks
+	// 	WHERE NOT EXISTS
+	// 		(SELECT number FROM extrinsics_old WHERE extrinsics_old.number = blocks.block_num)
+	// 	ORDER BY block_num ASC
+	// 	LIMIT $1
+	// 	"#,
+	// 	i64::from(max_block_load)
+	// )
+	// .fetch_all(conn)
+	// .await?
+	// .into_iter()
+	// .map(|b| (b.block_num as u32, b.hash, b.ext, b.spec as u32))
+	// .collect();
+	//
+	// Ok(blocks)
+	Ok(vec![])
 }
 
 /// Get upgrade blocks starting from a spec.
