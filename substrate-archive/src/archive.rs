@@ -122,7 +122,6 @@ pub trait Archive<Block: BlockT + Unpin, Db: ReadOnlyDb>
 where
 	Block::Hash: Unpin,
 {
-	// fn get_metadata(self) -> Metadata;
 
 	/// start driving the execution of the archive
 	fn drive(&mut self) -> Result<()>;

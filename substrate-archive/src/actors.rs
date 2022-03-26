@@ -189,9 +189,9 @@ where
 	Block::Hash: Unpin,
 	NumberFor<Block>: Into<u32>,
 {
-	async fn spawn(conf: &SystemConfig<Block, Db>) -> Result<Self> {
+	async fn spawn(conf: &SystemConfig<Block, Db>, chain_meta: &Metadata) -> Result<Self> {
 		let db = workers::DatabaseActor::new(conf.pg_url()).await?.create(None).spawn(&mut AsyncStd);
-		let storage = workers::StorageAggregator::new(db.clone()).create(None).spawn(&mut AsyncStd);
+		let storage = workers::StorageAggregator::new(db.clone(), chain_meta.clone()).create(None).spawn(&mut AsyncStd);
 		let metadata =
 			workers::MetadataActor::new(db.clone(), conf.meta().clone()).await?.create(None).spawn(&mut AsyncStd);
 		let blocks = workers::BlocksIndexer::new(conf, db.clone(), metadata.clone()).create(None).spawn(&mut AsyncStd);
@@ -272,7 +272,7 @@ where
 	}
 
 	fn drive(&mut self) -> Result<()> {
-		let instance = SystemInstance::new(self.config.clone(), self.client.clone())?;
+		let instance = SystemInstance::new(self.config.clone(), self.client.clone(), self.metadata.clone())?;
 		let handle = task::spawn(instance.work());
 		self.handle.replace(handle);
 		Ok(())
@@ -285,6 +285,7 @@ type TaskRunner<Block, Hash, Runtime, Client, Db> =
 pub struct SystemInstance<Block, Runtime, Db, Client> {
 	config: SystemConfig<Block, Db>,
 	client: Arc<Client>,
+	chain_metadata: Metadata,
 	_marker: PhantomData<Runtime>,
 }
 
@@ -304,12 +305,12 @@ where
 	Block::Hash: Unpin,
 	Block::Header: serde::de::DeserializeOwned,
 {
-	fn new(config: SystemConfig<Block, Db>, client: Arc<Client>) -> Result<Self> {
-		Ok(Self { config, client, _marker: PhantomData })
+	fn new(config: SystemConfig<Block, Db>, client: Arc<Client>, chain_meta: Metadata) -> Result<Self> {
+		Ok(Self { config, client, chain_metadata: chain_meta, _marker: PhantomData })
 	}
 
 	async fn work(self) -> Result<()> {
-		let actors = Actors::spawn(&self.config).await?;
+		let actors = Actors::spawn(&self.config, &self.chain_metadata).await?;
 		let pool = actors.db.send(GetState::Pool).await??.pool();
 		let persistent_config = &self.config.persistent_config;
 		let actors_future = actors.tick_interval();
@@ -439,13 +440,9 @@ where
 	Block::Hash: Unpin,
 	Block::Header: serde::de::DeserializeOwned,
 {
-	// fn get_metadata(self) -> Metadata {
-	// 	return self.metadata;
-	// }
 
 	fn drive(&mut self) -> Result<()> {
 		System::drive(self)?;
-		let _ = &self.metadata;
 		Ok(())
 	}
 

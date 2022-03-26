@@ -1,7 +1,7 @@
 [chain]
 # Must be an absolute path to chain data db (no ~/)
 # Can also be specified via the `CHAIN_DATA_DB` environment variable
-data_path = "/Users/sonar/Library/Application Support/node-template/chains/local_testnet/db/full"
+data_path = "/Users/sonar/tmp/db"
 
 # How much should the read-only database keep in cache (MB)
 # Optional, default: 128
@@ -9,7 +9,7 @@ cache_size = 128
 
 # RocksDB secondary directory
 # Optional, default: /<local>/substrate_archive/rocksdb_secondary/
-rocksdb_secondary_path = "./substrate_archive/rocksdb_secondary"
+rocksdb_secondary_path = "/Users/sonar/tmp/db/rocksdb_secondary"
 
 [runtime]
 # Specification of different methods of executing the runtime Wasm code.
@@ -34,7 +34,7 @@ url = "postgres://localhost:5432/substrate_test"
 
 [log]
 # Optional log level of stdout, default: "DEBUG"
-std = "DEBUG"
+std = "INFO"
 
 # Optional file log.
 #[log.file]

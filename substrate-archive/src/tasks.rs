@@ -27,6 +27,7 @@ use xtra::prelude::*;
 use sc_client_api::backend;
 use sp_api::{ApiExt, ApiRef, ConstructRuntimeApi};
 use sp_block_builder::BlockBuilder as BlockBuilderApi;
+use sp_core::twox_128;
 use sp_runtime::{
 	generic::BlockId,
 	traits::{Block as BlockT, Header, NumberFor},
@@ -93,7 +94,11 @@ where
 
 		let hash = changes.hash;
 		let num: u32 = changes.number.into();
-
+		for val in &changes.storage_changes {
+			if val.0 == system_events_key().0 {
+				println!("Got {:02X?}", val.1.as_ref().unwrap());
+			}
+		}
 		Storage::new(
 			hash,
 			num,
@@ -286,4 +291,10 @@ where
 	}
 	log::debug!("Took {:?} to insert & send finished task", now.elapsed());
 	Ok(())
+}
+
+fn system_events_key() -> sp_core::storage::StorageKey {
+	let mut storage_key = twox_128(b"System").to_vec();
+	storage_key.extend(twox_128(b"Events").to_vec());
+	sp_core::storage::StorageKey(storage_key)
 }

@@ -25,19 +25,22 @@ use crate::{
 	types::{BatchStorage, Hash, Storage},
 	wasm_tracing::Traces,
 };
+use crate::metadata::Metadata;
 
 pub struct StorageAggregator<H: Send + Sync + 'static> {
 	db: Address<DatabaseActor>,
 	storage: Vec<Storage<H>>,
 	traces: Vec<Traces>,
+	metadata: Metadata
 }
 
 impl<H: Hash> StorageAggregator<H> {
-	pub fn new(db: Address<DatabaseActor>) -> Self {
-		Self { db, storage: Vec::with_capacity(500), traces: Vec::with_capacity(250) }
+	pub fn new(db: Address<DatabaseActor>, metadata: Metadata) -> Self {
+		Self { db, storage: Vec::with_capacity(500), traces: Vec::with_capacity(250), metadata }
 	}
 
 	async fn handle_storage(&mut self, ctx: &mut Context<Self>) -> Result<()> {
+		let _ = &self.metadata;
 		let storage = std::mem::replace(&mut self.storage, Vec::with_capacity(500));
 		if !storage.is_empty() {
 			let changes = storage.iter().flat_map(|c| c.changes.iter()).count();
